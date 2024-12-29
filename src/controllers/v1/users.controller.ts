@@ -16,9 +16,7 @@ import { UserResponseDto } from "@dto/user/user-response.dto";
 import { IPaginationOptions } from "@interface/crud.interface";
 import {
   NotFoundException,
-  UnauthorizedException,
-} from "../../exceptions/http.exception";
-import { HttpStatus } from "../../constants/http.constant";
+} from "@/exceptions/http.exception";
 
 @Service()
 @JsonController("/v1/users")
@@ -38,11 +36,7 @@ export class UsersController {
 
   @Get("/:id")
   async findOne(@Param("id") id: number): Promise<UserResponseDto> {
-    const user = await this.userService.findOne(id);
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-    return user;
+    return await this.userService.findOne(id);
   }
 
   @Put("/:id")

@@ -4,11 +4,11 @@ import {
 } from "routing-controllers";
 import { ValidationError } from "class-validator";
 import { Service } from "typedi";
-
+import { Request, Response, NextFunction } from "express";
 @Service()
 @Middleware({ type: "after" })
 export class ValidationMiddleware implements ExpressErrorMiddlewareInterface {
-  error(error: any, request: any, response: any, next: (err?: any) => any) {
+  error(error: any, request: Request, response: Response, next: (err?: any) => NextFunction) {
     console.log("Validation Error:", error);
 
     if (Array.isArray(error) && error[0] instanceof ValidationError) {

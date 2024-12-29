@@ -6,37 +6,31 @@ import {
   FindOneOptions,
   In,
 } from "typeorm";
-import { User } from "@entity/user.entity";
+import { Product } from "@entity/product.entity";
 import {
   ICrudService,
   IPaginationOptions,
   IPaginationResponse,
 } from "@interface/crud.interface";
-import { CreateUserDto } from "@dto/create-user.dto";
-import { UpdateUserDto } from "@dto/user/update-user.dto";
-import { UserResponseDto } from "@dto/user/user-response.dto";
 import { InjectRepository } from "@decorator/inject-repository.decorator";
+import { CreateProductDto } from "@/dto/product/create-product.dto";
+import { ProductResponseDto } from "@/dto/product/product-response.dto";
+import { UpdateProductDto } from "@/dto/product/update-product.dto";
 import {
   BadRequestException,
   NotFoundException,
-  ConflictException
 } from "@/exceptions/http.exception";
 
 @Service()
-export class UserService
-  implements ICrudService<User, CreateUserDto, UpdateUserDto, UserResponseDto> {
+export class ProductService
+  implements ICrudService<Product, CreateProductDto, UpdateProductDto, ProductResponseDto> {
   constructor(
-    @InjectRepository(User)
-    private readonly repository: Repository<User>
+    @InjectRepository(Product)
+    private readonly repository: Repository<Product>
   ) { }
 
-  async create(data: CreateUserDto): Promise<UserResponseDto> {
+  async create(data: CreateProductDto): Promise<ProductResponseDto> {
     try {
-      const existingUser = await this.findOneBy({ email: data.email });
-      if (existingUser) {
-        throw new ConflictException("User with this email already exists");
-      }
-
       const entity = this.repository.create(data);
       const saved = await this.repository.save(entity);
       return this.toDTO(saved);
@@ -45,7 +39,7 @@ export class UserService
     }
   }
 
-  async createMany(data: CreateUserDto[]): Promise<UserResponseDto[]> {
+  async createMany(data: CreateProductDto[]): Promise<ProductResponseDto[]> {
     try {
       const entities = this.repository.create(data);
       const saved = await this.repository.save(entities);
@@ -55,7 +49,7 @@ export class UserService
     }
   }
 
-  async findAll(options?: FindManyOptions<User>): Promise<UserResponseDto[]> {
+  async findAll(options?: FindManyOptions<Product>): Promise<ProductResponseDto[]> {
     try {
       const items = await this.repository.find(options);
       return items.map((item) => this.toDTO(item));
@@ -66,11 +60,11 @@ export class UserService
 
   async findOne(
     id: number | string,
-    options?: FindOneOptions<User>
-  ): Promise<UserResponseDto> {
+    options?: FindOneOptions<Product>
+  ): Promise<ProductResponseDto> {
     try {
       if (!id) {
-        throw new BadRequestException("User ID is required");
+        throw new BadRequestException("Product ID is required");
       }
 
       const item = await this.repository.findOne({
@@ -79,7 +73,7 @@ export class UserService
       });
 
       if (!item) {
-        throw new NotFoundException("User not found");
+        throw new NotFoundException("Product not found");
       }
 
       return this.toDTO(item);
@@ -90,8 +84,8 @@ export class UserService
 
   async findById(
     id: number | string,
-    options?: FindOneOptions<User>
-  ): Promise<UserResponseDto | null> {
+    options?: FindOneOptions<Product>
+  ): Promise<ProductResponseDto> {
     try {
       return this.findOne(id, options);
     } catch (error) {
@@ -101,15 +95,20 @@ export class UserService
 
   async findByIds(
     ids: (number | string)[],
-    options?: FindManyOptions<User>
-  ): Promise<UserResponseDto[]> {
+    options?: FindManyOptions<Product>
+  ): Promise<ProductResponseDto[]> {
     try {
+      if (!ids?.length) {
+        throw new BadRequestException("Product IDs are required");
+      }
+
       const items = await this.repository.find({
         ...options,
         where: {
           id: In(ids.map((id) => Number(id))),
         },
       });
+
       return items.map((item) => this.toDTO(item));
     } catch (error) {
       throw error;
@@ -117,17 +116,26 @@ export class UserService
   }
 
   async findOneBy(
-    where: FindOptionsWhere<User>
-  ): Promise<UserResponseDto | null> {
+    where: FindOptionsWhere<Product>
+  ): Promise<ProductResponseDto> {
     try {
+      if (!where) {
+        throw new BadRequestException("Search criteria is required");
+      }
+
       const item = await this.repository.findOne({ where });
-      return item ? this.toDTO(item) : null;
+      
+      if (!item) {
+        throw new NotFoundException("Product not found");
+      }
+
+      return this.toDTO(item);
     } catch (error) {
       throw error;
     }
   }
 
-  async count(options?: FindManyOptions<User>): Promise<number> {
+  async count(options?: FindManyOptions<Product>): Promise<number> {
     try {
       return this.repository.count(options);
     } catch (error) {
@@ -137,11 +145,11 @@ export class UserService
 
   async update(
     id: number | string,
-    data: UpdateUserDto
-  ): Promise<UserResponseDto> {
+    data: UpdateProductDto
+  ): Promise<ProductResponseDto> {
     try {
       if (!id) {
-        throw new BadRequestException("User ID is required");
+        throw new BadRequestException("Product ID is required");
       }
 
       const existing = await this.repository.findOne({
@@ -149,23 +157,11 @@ export class UserService
       });
 
       if (!existing) {
-        throw new NotFoundException("User not found");
-      }
-
-      // If email is being updated, check for conflicts
-      if (data.email && data.email !== existing.email) {
-        const emailExists = await this.findOneBy({ email: data.email });
-        if (emailExists) {
-          throw new ConflictException("Email already in use");
-        }
+        throw new NotFoundException("Product not found");
       }
 
       await this.repository.update(Number(id), data);
-      const updated = await this.findOne(id);
-      if (!updated) {
-        throw new NotFoundException(`User with id ${id} not found after update`);
-      }
-      return updated;
+      return this.findOne(id);
     } catch (error) {
       throw error;
     }
@@ -173,9 +169,20 @@ export class UserService
 
   async updateMany(
     ids: (number | string)[],
-    data: UpdateUserDto
-  ): Promise<UserResponseDto[]> {
+    data: UpdateProductDto
+  ): Promise<ProductResponseDto[]> {
     try {
+      if (!ids?.length) {
+        throw new BadRequestException("Product IDs are required");
+      }
+
+      const existing = await this.findByIds(ids);
+      if (existing.length !== ids.length) {
+        const foundIds = existing.map(p => p.id);
+        const missingIds = ids.filter(id => !foundIds.includes(Number(id)));
+        throw new NotFoundException(`Products with ids ${missingIds.join(', ')} not found`);
+      }
+
       await this.repository.update(
         ids.map((id) => Number(id)),
         data
@@ -187,10 +194,14 @@ export class UserService
   }
 
   async updateBy(
-    where: FindOptionsWhere<User>,
-    data: UpdateUserDto
-  ): Promise<UserResponseDto[]> {
+    where: FindOptionsWhere<Product>,
+    data: UpdateProductDto
+  ): Promise<ProductResponseDto[]> {
     try {
+      if (!where) {
+        throw new BadRequestException("Search criteria is required");
+      }
+
       await this.repository.update(where, data);
       return this.findAll({ where });
     } catch (error) {
@@ -201,7 +212,7 @@ export class UserService
   async delete(id: number | string): Promise<boolean> {
     try {
       if (!id) {
-        throw new BadRequestException("User ID is required");
+        throw new BadRequestException("Product ID is required");
       }
 
       const existing = await this.repository.findOne({
@@ -209,7 +220,7 @@ export class UserService
       });
 
       if (!existing) {
-        throw new NotFoundException("User not found");
+        throw new NotFoundException("Product not found");
       }
 
       const result = await this.repository.delete(Number(id));
@@ -221,6 +232,17 @@ export class UserService
 
   async deleteMany(ids: (number | string)[]): Promise<boolean> {
     try {
+      if (!ids?.length) {
+        throw new BadRequestException("Product IDs are required");
+      }
+
+      const existing = await this.findByIds(ids);
+      if (existing.length !== ids.length) {
+        const foundIds = existing.map(p => p.id);
+        const missingIds = ids.filter(id => !foundIds.includes(Number(id)));
+        throw new NotFoundException(`Products with ids ${missingIds.join(', ')} not found`);
+      }
+
       const result = await this.repository.delete(ids.map((id) => Number(id)));
       return !!result.affected;
     } catch (error) {
@@ -228,8 +250,12 @@ export class UserService
     }
   }
 
-  async deleteBy(where: FindOptionsWhere<User>): Promise<boolean> {
+  async deleteBy(where: FindOptionsWhere<Product>): Promise<boolean> {
     try {
+      if (!where) {
+        throw new BadRequestException("Search criteria is required");
+      }
+
       const result = await this.repository.delete(where);
       return !!result.affected;
     } catch (error) {
@@ -238,8 +264,8 @@ export class UserService
   }
 
   async paginate(
-    options: IPaginationOptions & FindManyOptions<User>
-  ): Promise<IPaginationResponse<UserResponseDto>> {
+    options: IPaginationOptions & FindManyOptions<Product>
+  ): Promise<IPaginationResponse<ProductResponseDto>> {
     try {
       const [items, total] = await this.repository.findAndCount({
         skip: ((options.page || 1) - 1) * (options.limit || 10),
@@ -265,10 +291,41 @@ export class UserService
     }
   }
 
-  async exists(where: FindOptionsWhere<User>): Promise<boolean> {
+  async exists(where: FindOptionsWhere<Product>): Promise<boolean> {
     try {
+      if (!where) {
+        throw new BadRequestException("Search criteria is required");
+      }
+
       const count = await this.count({ where });
       return count > 0;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  toDTO(entity: Product): ProductResponseDto {
+    try {
+      return {
+        id: entity.id,
+        name: entity.name,
+        description: entity.description,
+        price: entity.price,
+        stock: entity.stock,
+        isActive: entity.isActive,
+        createdAt: entity.createdAt,
+        updatedAt: entity.updatedAt,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  fromDTO(dto: CreateProductDto | UpdateProductDto): Partial<Product> {
+    try {
+      return {
+        ...dto,
+      };
     } catch (error) {
       throw error;
     }
@@ -277,7 +334,7 @@ export class UserService
   async softDelete(id: number | string): Promise<boolean> {
     try {
       if (!id) {
-        throw new BadRequestException("User ID is required");
+        throw new BadRequestException("Product ID is required");
       }
 
       const existing = await this.repository.findOne({
@@ -285,7 +342,7 @@ export class UserService
       });
 
       if (!existing) {
-        throw new NotFoundException("User not found");
+        throw new NotFoundException("Product not found");
       }
 
       const result = await this.repository.softDelete(Number(id));
@@ -298,37 +355,19 @@ export class UserService
   async restore(id: number | string): Promise<boolean> {
     try {
       if (!id) {
-        throw new BadRequestException("User ID is required");
+        throw new BadRequestException("Product ID is required");
+      }
+
+      const existing = await this.repository.findOne({
+        where: { id: Number(id) }
+      });
+
+      if (!existing) {
+        throw new NotFoundException("Product not found");
       }
 
       const result = await this.repository.restore(Number(id));
-      if (!result.affected) {
-        throw new NotFoundException("User not found or already restored");
-      }
-      return true;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  toDTO(entity: User): UserResponseDto {
-    try {
-      return {
-        id: entity.id,
-        email: entity.email,
-        isActive: entity.isActive,
-        createdAt: entity.createdAt,
-      };
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  fromDTO(dto: CreateUserDto | UpdateUserDto): Partial<User> {
-    try {
-      return {
-        ...dto,
-      };
+      return !!result.affected;
     } catch (error) {
       throw error;
     }

@@ -1,29 +1,40 @@
-import { DataSource, DataSourceOptions } from "typeorm";
+import { DataSource, DataSourceOptions, EntityTarget } from "typeorm";
 import { Container } from "typedi";
 import { User } from "@entity/user.entity";
 import { EnvConfig } from "@config/env.config";
+import { Product } from "@/entities/product.entity";
 
 export class DatabaseConfig {
   private static instance: DatabaseConfig;
   private readonly dataSource: DataSource;
 
+  private registerRepositories(entities: EntityTarget<any>[]): void {
+    entities.forEach(entity => {
+      const repository = this.dataSource.getRepository(entity);
+      const entityName = (entity as Function).name;
+      Container.set(`${entityName}Repository`, repository);
+    });
+  }
+
   private constructor() {
     const env = EnvConfig.getInstance();
+    const dbConfig = env.dbConfig;
 
-    const options: DataSourceOptions = {
-      type: "sqlite",
-      database: env.env === "production" ? "prod.db" : "dev.db",
-      entities: [User],
+    const commonOptions = {
+      entities: [User, Product],
       synchronize: env.env === "development",
       logging: env.env === "development",
     };
 
+    const options: DataSourceOptions = {
+      ...dbConfig,
+      ...commonOptions,
+    };
+
     this.dataSource = new DataSource(options);
-    // Register với tên theo entity
-    Container.set(
-      `${User.name}Repository`,
-      this.dataSource.getRepository(User)
-    );
+    
+    // Register repositories automatically from commonOptions
+    this.registerRepositories(commonOptions.entities);
   }
 
   public static getInstance(): DatabaseConfig {
@@ -33,17 +44,11 @@ export class DatabaseConfig {
     return DatabaseConfig.instance;
   }
 
-  public async initialize(): Promise<void> {
-    try {
-      await this.dataSource.initialize();
-      console.log("Data Source has been initialized!");
-    } catch (error) {
-      console.error("Error during Data Source initialization:", error);
-      throw error;
-    }
+  public getDataSource(): DataSource {
+    return this.dataSource;
   }
 
-  get AppDataSource(): DataSource {
-    return this.dataSource;
+  public async initialize(): Promise<void> {
+    await this.dataSource.initialize();
   }
 }

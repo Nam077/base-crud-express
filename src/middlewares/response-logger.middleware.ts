@@ -1,6 +1,6 @@
+import { Logger } from "@/services/logger.service";
 import { Request, Response, NextFunction } from "express";
 import { Service } from "typedi";
-import { Logger } from "../services/logger.service";
 
 interface RequestWithTimer extends Request {
   startTime?: number;

@@ -1,9 +1,5 @@
+import { HttpMessage, HttpStatus, HttpStatusType } from "@/constants/http.constant";
 import { HttpError } from "routing-controllers";
-import {
-  HttpStatus,
-  HttpMessage,
-  HttpStatusType,
-} from "../constants/http.constant";
 
 export class HttpException extends HttpError {
   public status: number;

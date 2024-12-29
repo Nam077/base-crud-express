@@ -23,7 +23,10 @@
       "@dto/*": ["dtos/*"],
       "@entity/*": ["entities/*"],
       "@service/*": ["services/*"],
-      "@util/*": ["utils/*"]
+      "@util/*": ["utils/*"],
+      "@middleware/*": ["middlewares/*"],
+      "@exception/*": ["exceptions/*"],
+      "@constant/*": ["constants/*"]
     }
   },
   "include": ["src/**/*"],

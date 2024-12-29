@@ -5,12 +5,11 @@ import { Container } from "typedi";
 import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
-import { EnvConfig } from "./configs/env.config";
-import { DatabaseConfig } from "./configs/database.config";
-import { routingConfig } from "./configs/routing.config";
 import os from "os";
-import { ResponseLoggerMiddleware } from "./middlewares/response-logger.middleware";
-import { ValidationMiddleware } from "./middlewares/validation.middleware";
+import { EnvConfig } from "@/configs/env.config";
+import { DatabaseConfig } from "@/configs/database.config";
+import { ResponseLoggerMiddleware } from "@/middlewares/response-logger.middleware";
+import { routingConfig } from "./configs/routing.config";
 
 const getLocalIP = () => {
   const interfaces = os.networkInterfaces();
