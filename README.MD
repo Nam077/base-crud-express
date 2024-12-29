@@ -1,55 +1,52 @@
-# BOILERPLATE STI EXPRESS
+# STI EXPRESS BOILERPLATE
 
-Đây là một boilerplate cho dự án Express + TypeScript với các tính năng hiện đại, tập trung vào type-safety và khả năng mở rộng.
+Boilerplate cho dự án Express + TypeScript với các tính năng hiện đại, tập trung vào type-safety và khả năng mở rộng.
 
-## Cấu Trúc Thư Mục
+## Project Structure
 
 ```
 src/
-├── configs/           # Cấu hình ứng dụng
-│   ├── env.config.ts      # Cấu hình môi trường
-│   ├── database.config.ts # Cấu hình cơ sở dữ liệu
-│   └── routing.config.ts  # Cấu hình định tuyến
-├── constants/         # Hằng số
-│   └── http.constant.ts   # Mã trạng thái & thông báo HTTP
-├── controllers/       # Bộ điều khiển xử lý yêu cầu
-│   └── v1/               # Phiên bản API 1
-├── decorators/       # Bộ trang trí tùy chỉnh
+├── configs/           # Application configurations
+│   ├── env.config.ts      # Environment config
+│   ├── database.config.ts # Database config
+│   └── routing.config.ts  # Routing config
+├── constants/         # Constants
+│   └── http.constant.ts   # HTTP status codes & messages
+├── controllers/       # Request handlers
+│   └── v1/               # API version 1
+├── decorators/       # Custom decorators
 │   └── inject-repository.decorator.ts
-├── dtos/             # Đối tượng truyền dữ liệu
-│   └── user/             # DTOs liên quan đến người dùng
-├── entities/         # Thực thể cơ sở dữ liệu
+├── dtos/             # Data Transfer Objects
+│   └── user/             # User-related DTOs
+├── entities/         # Database entities
 │   └── user.entity.ts
-├── exceptions/       # Xử lý ngoại lệ
+├── exceptions/       # Exception handling
 │   └── http.exception.ts
-├── interfaces/       # Giao diện và kiểu dữ liệu
+├── interfaces/       # Interfaces & types
 │   └── crud.interface.ts
-├── middlewares/      # Phần mềm trung gian
+├── middlewares/      # Middleware
 │   ├── error.middleware.ts
 │   ├── validation.middleware.ts
 │   └── response-logger.middleware.ts
-├── services/         # Xử lý logic nghiệp vụ
+├── services/         # Business logic
 │   ├── user.service.ts
 │   └── logger.service.ts
-└── app.ts           # Thiết lập ứng dụng Express
+└── app.ts           # Express application setup
 ```
 
-## Tính Năng Chi Tiết
+## Features
 
 ### 1. TypeScript + Express
-
 - Kiểm tra kiểu dữ liệu nghiêm ngặt
 - Bí danh đường dẫn (@entity, @service, v.v.)
 - Tự động tải lại khi phát triển
 
 ### 2. Tiêm Phụ Thuộc
-
 - Container TypeDI
 - Trang trí Service
 - Tiêm Repository
 
 ### 3. Cơ Sở Dữ Liệu (TypeORM)
-
 - Mô hình dựa trên Entity
 - Mẫu Repository
 - Hỗ trợ Migration
@@ -57,21 +54,18 @@ src/
 - Hỗ trợ quan hệ
 
 ### 4. Xác Thực & Chuyển Đổi
-
 - Trang trí class-validator
 - Xác thực dữ liệu đầu vào
 - Chuyển đổi DTO
 - Quy tắc xác thực tùy chỉnh
 
 ### 5. Định Tuyến & Điều Khiển
-
 - Định tuyến dựa trên Decorator
-- Kiểm soát phiên bản (/v1/\*)
+- Kiểm soát phiên bản (/v1/*)
 - Xử lý dữ liệu yêu cầu
 - Chuẩn hóa phản hồi
 
 ### 6. Hệ Thống Ghi Log
-
 - Sử dụng Winston
 - Tự động xoay vòng theo ngày
 - Log màu trong console
@@ -80,7 +74,6 @@ src/
 - Sẵn sàng cho môi trường sản xuất
 
 ### 7. Xử Lý Lỗi
-
 - Xử lý lỗi tập trung
 - Ngoại lệ HTTP tùy chỉnh
 - Định dạng lỗi xác thực
@@ -88,7 +81,6 @@ src/
 - Phản hồi lỗi chuẩn hóa
 
 ### 8. Môi Trường & Cấu Hình
-
 - Nhiều môi trường (phát triển/sản xuất)
 - Xác thực môi trường
 - Cấu hình an toàn kiểu
@@ -236,10 +228,6 @@ Mọi đóng góp đều được chào đón. Vui lòng:
 4. Push lên nhánh
 5. Tạo Pull Request
 
-## Giấy Phép
-
-[Thông tin về giấy phép]
-
 ## Tác Giả
 
-[Thông tin về tác giả và liên hệ]
+[NamUndefined](https://github.com/Nam077)
